@@ -1,0 +1,107 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+  {{ message }}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endfor %}
+{% endif %}
+
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-4">
+      {% if listing.image_url %}
+      <img src="{{ listing.image_url }}" class="img-fluid" alt="{{ listing.title }}" />
+      {% else %}
+      <img src="https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"
+        class="img-fluid" alt="No image">
+      {% endif %}
+      <form method="post" action="{% url 'auctions:watch' listing.id %}">
+        {% csrf_token %}
+        {% if is_watching %}
+        <input type="submit" class="btn btn-block" value="Unwatch" />
+        {% else %}
+        <input type="submit" class="btn btn-block" value="Watch" />
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="col-md-5">
+      <h3 class="mb-3">{{ listing.title }}</h3>
+      <p class="mb-2">{{ listing.description }}</p>
+      <ul class="list-group list-group-flush mb-3">
+        <li class="list-group-item">Category: {{ listing.category }}</li>
+        <li class="list-group-item">Price: ${{ listing.price }}</li>
+        <li class="list-group-item">Total bids: {{ total_bids }}</li>
+        <li class="list-group-item">Last bidder: {{ last_bidder|default:"No bids yet" }}</li>
+        <li class="list-group-item">Created at: {{ listing.created_at|date:"F d, Y" }}</li>
+        <li class="list-group-item">Author: {{ listing.author }}</li>
+        {% if listing.winner %}
+        <li class="list-group-item">Winner: {{ listing.winner }}</li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <div class="col-md-3">
+      <div class="border p-3">
+        {% if listing.is_active %}
+        <div class="btn-group" style="display: flex; align-items: center">
+          {% if listing.author == request.user %}
+          <form method="post" action="{% url 'auctions:close' listing.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <input type="submit" class="btn btn-primary" value="Close" />
+            </div>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'auctions:bid' listing.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+              {{ bid_form }}
+            </div>
+            <input type="submit" class="btn btn-primary btn-block" value="Bid" />
+          </form>
+          {% endif %}
+        </div>
+        {% else %}
+        {% if listing.winner == request.user %}
+        <h4>You won</h4>
+        {% else %}
+        <h4>Closed</h4>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <h4>Comments:</h4>
+      <form method="post" action="{% url 'auctions:comment' listing.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+          {{comment_form}}
+        </div>
+        <input type="submit" class="btn btn-secondary" value="Comment" />
+      </form>
+
+      {% for comment in listing.comments.all %}
+      <div class="comment mb-2">
+        <strong>{{ comment.author }}</strong>
+        <p>{{ comment.content }}</p>
+      </div>
+      {% empty %}
+      No comments
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

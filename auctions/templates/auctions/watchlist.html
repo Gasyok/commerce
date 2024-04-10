@@ -1,0 +1,78 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>Watchlist</h2>
+
+<div class="container mt-3">
+  <div class="row">
+    {% for obj in page_obj %}
+
+    <div class="col-sm-4 mb-3">
+      <!-- <a href="{% url 'auctions:listing' obj.pk %}" class="card-link"> -->
+      <div class="card h-100">
+        {% if obj.image_url %}
+        <img src="{{ obj.image_url }}" class="card-img-top" alt="Image">
+        {% else %}
+        <img src="https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"
+          class="card-img-top" alt="No image">
+        {% endif %}
+
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ obj.title }}</h5>
+          <p class="card-text">{{ obj.description }}</p>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">${{ obj.price }}</li>
+          <li class="list-group-item">{{ obj.author }}</li>
+          <li class="list-group-item">{{ obj.created_at }}</li>
+        </ul>
+        <div class="card-body">
+          <!-- <a href="{% url 'auctions:listing' obj.pk %}" class="card-link">View</a> -->
+          <!-- <form method="get" action="{% url 'auctions:listing' obj.pk %}"> -->
+          <!--   <input type="submit" class="btn btn-block" value="View" /> -->
+          <!-- </form> -->
+          <!-- <a href="{% url 'auctions:watch' obj.pk %}" class="btn btn-primary">Unwatch</a> -->
+          <div class="btn-group" style="display: flex; justify-content: space-evenly; align-items: center">
+            <form method="get" action="{% url 'auctions:listing' obj.pk %}">
+              <input type="submit" class="btn btn-primary" value="View" />
+            </form>
+            <form method="post" action="{% url 'auctions:watch' obj.pk %}">
+              {% csrf_token %}
+              <input type="submit" class="btn btn-primary" value="Unwatch" />
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- </a> -->
+    </div>
+    {% empty %}
+    <p>None</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+          <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link"
+              href="?page={{ num }}">{{ num }}</a></li>
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
